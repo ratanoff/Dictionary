@@ -47,7 +47,7 @@ public class DetailActivity extends AppCompatActivity {
     private RequestQueue mRequestQueue;
     private Gson mGson;
     private WordFactory mFactory;
-    private static LruCache<String, List<String>> mCache = new LruCache<String, List<String>>((int) (Runtime.getRuntime().maxMemory() / 8));
+    private static LruCache<String, List<String>> mCache = new LruCache<>((int) (Runtime.getRuntime().maxMemory() / 8));
 
     private ActionBar mActionBar;
     private TextInputEditText mWordEditText;
