@@ -13,10 +13,13 @@ import android.view.MenuItem;
 import java.util.List;
 
 import ru.ratanov.dictionary.adapter.WordAdapter;
+import ru.ratanov.dictionary.dialog.SortDialog;
 import ru.ratanov.dictionary.model.Word;
 import ru.ratanov.dictionary.model.WordFactory;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String SORT_DIALOG = "sort_dialog";
 
     private RecyclerView mRecyclerView;
     private WordAdapter mAdapter;
@@ -45,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         updateUI();
     }
 
-    private void updateUI() {
+    public void updateUI() {
         WordFactory factory = WordFactory.get(this);
         List<Word> words = factory.getWords();
 
@@ -69,7 +72,16 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_new_word) {
             Intent intent = DetailActivity.newIntent(this, null);
             startActivity(intent);
+            return true;
+        } else if (item.getItemId() == R.id.action_filter) {
+            SortDialog dialog = new SortDialog();
+            dialog.show(getSupportFragmentManager(), SORT_DIALOG);
+            return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showSortDialog() {
+
     }
 }

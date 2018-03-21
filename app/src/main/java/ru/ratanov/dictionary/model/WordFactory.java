@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import ru.ratanov.dictionary.db.WordBaseHelper;
 import ru.ratanov.dictionary.db.WordCursorWrapper;
+import ru.ratanov.dictionary.util.QueryPreferences;
 
 import static ru.ratanov.dictionary.db.WordDbSchema.WordTable;
 import static ru.ratanov.dictionary.db.WordDbSchema.WordTable.Cols.*;
@@ -88,6 +89,10 @@ public class WordFactory {
     }
 
     private WordCursorWrapper queryWords(String whereClause, String[] whereArgs) {
+
+        String sort = QueryPreferences.getStoredQuery(mContext, "sort", WordTable.Cols.TITLE);
+        String order = QueryPreferences.getStoredQuery(mContext, "order", " ASC");
+
         Cursor cursor = mDatabase.query(
                 WordTable.NAME,
                 null,
@@ -95,12 +100,12 @@ public class WordFactory {
                 whereArgs,
                 null,
                 null,
-                TITLE + " ASC"
+                sort + order
         );
         return new WordCursorWrapper(cursor);
     }
 
-    public static ContentValues getContentValues(Word word) {
+    private static ContentValues getContentValues(Word word) {
         ContentValues values = new ContentValues();
         values.put(UUID, word.getId().toString());
         values.put(TITLE, word.getTitle());
