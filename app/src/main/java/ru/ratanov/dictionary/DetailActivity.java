@@ -51,7 +51,7 @@ public class DetailActivity extends AppCompatActivity {
     private ListView mListView;
     private Button mButton;
 
-    WordFactory mFactory;
+    private WordFactory mFactory;
 
     private boolean editMode = false;
     private UUID mId;
@@ -102,10 +102,14 @@ public class DetailActivity extends AppCompatActivity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentWord.setTitle(Utils.capitalize(mWordEditText.getText().toString()));
-                currentWord.setTranslate(Utils.capitalize(mTranslateEditText.getText().toString()));
-                mFactory.updateWord(currentWord);
-                finish();
+                if (fieldsAreNotEmpty()) {
+                    currentWord.setTitle(Utils.capitalize(mWordEditText.getText().toString()));
+                    currentWord.setTranslate(Utils.capitalize(mTranslateEditText.getText().toString()));
+                    mFactory.updateWord(currentWord);
+                    finish();
+                } else {
+                    Toast.makeText(DetailActivity.this, R.string.fill_fields, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -119,9 +123,7 @@ public class DetailActivity extends AppCompatActivity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String title = mWordEditText.getText().toString();
-                String translate = mTranslateEditText.getText().toString();
-                if (!title.isEmpty() && !translate.isEmpty()) {
+                if (fieldsAreNotEmpty()) {
                     Word word = new Word();
                     word.setTitle(Utils.capitalize(mWordEditText.getText().toString()));
                     word.setTranslate(Utils.capitalize(mTranslateEditText.getText().toString()));
@@ -184,6 +186,11 @@ public class DetailActivity extends AppCompatActivity {
                 mTranslateEditText.setText(Utils.capitalize(variant));
             }
         });
+    }
+
+    private boolean fieldsAreNotEmpty() {
+        return !mWordEditText.getText().toString().isEmpty() &&
+                !mTranslateEditText.getText().toString().isEmpty();
     }
 
     private void fetchTranslate() {
