@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Словарь</string>
+    <string name="new_word">Добавить слово</string>
+    <string name="word_hint">Слово</string>
+    <string name="translate_hint">Перевод</string>
+    <string name="add">Добавить</string>
+    <string name="delete_word">Удалить слово</string>
+    <string name="edit_word">Изменить слово</string>
+    <string name="add_word">Добавить слово</string>
+    <string name="delete_dialog_title">Удалить слово?</string>
+    <string name="no">Нет</string>
+    <string name="yes">Да</string>
+    <string name="api_key">dict.1.1.20180320T042705Z.2b11942462e66f8b.2784ba8abb2167d0499b9449f43149ad1b0380e4</string>
+    <string name="error_data_loading">Ошибка загрузки данных</string>
+    <string name="proposals">Предложения</string>
+    <string name="fill_fields">Заполните поля!</string>
+</resources>
