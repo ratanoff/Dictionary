@@ -47,12 +47,7 @@ public class DetailActivity extends AppCompatActivity {
     private RequestQueue mRequestQueue;
     private Gson mGson;
     private WordFactory mFactory;
-    private static LruCache<String, List<String>> mCache = new LruCache<String, List<String>>(1024) {
-        @Override
-        protected int sizeOf(String key, List<String> value) {
-            return super.sizeOf(key, value);
-        }
-    };
+    private static LruCache<String, List<String>> mCache = new LruCache<String, List<String>>((int) (Runtime.getRuntime().maxMemory() / 8));
 
     private ActionBar mActionBar;
     private TextInputEditText mWordEditText;
@@ -105,7 +100,7 @@ public class DetailActivity extends AppCompatActivity {
         mWordEditText.setText(currentWord.getTitle());
         mTranslateEditText.setText(currentWord.getTranslate());
         fetchTranslate();
-        mButton.setText("Сохранить");
+        mButton.setText(R.string.save);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -202,17 +197,18 @@ public class DetailActivity extends AppCompatActivity {
 
     private void fetchTranslate() {
         String word = mWordEditText.getText().toString();
+
         if (word.isEmpty()) {
             return;
         }
-        Log.i(TAG, "fetchTranslate: " + mCache.size());
+
         List<String> variantsFromCache = getVariantsFromCache(word.toLowerCase());
+
         if (variantsFromCache != null) {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(DetailActivity.this,
                     android.R.layout.simple_list_item_1, variantsFromCache);
             mListView.setAdapter(adapter);
         } else {
-            Log.i(TAG, "fetchTranslate: NULL");
             String url = Uri.parse(ENDPOINT)
                     .buildUpon()
                     .appendQueryParameter("key", getString(R.string.api_key))
@@ -245,11 +241,8 @@ public class DetailActivity extends AppCompatActivity {
     };
 
     private void saveVariantsToCache(String word, List<String> variants) {
-        Log.i(TAG, "saveVariantsToCache: ");
         if (getVariantsFromCache(word) == null) {
             mCache.put(word, variants);
-            Log.i(TAG, "SAVED " + word);
-            Log.i(TAG, "SIZE = " + mCache.size());
         }
     }
 
