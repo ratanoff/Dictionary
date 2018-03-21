@@ -7,9 +7,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.util.LruCache;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,14 +46,19 @@ public class DetailActivity extends AppCompatActivity {
 
     private RequestQueue mRequestQueue;
     private Gson mGson;
+    private WordFactory mFactory;
+    private static LruCache<String, List<String>> mCache = new LruCache<String, List<String>>(1024) {
+        @Override
+        protected int sizeOf(String key, List<String> value) {
+            return super.sizeOf(key, value);
+        }
+    };
 
     private ActionBar mActionBar;
     private TextInputEditText mWordEditText;
     private TextInputEditText mTranslateEditText;
     private ListView mListView;
     private Button mButton;
-
-    private WordFactory mFactory;
 
     private boolean editMode = false;
     private UUID mId;
@@ -198,16 +205,24 @@ public class DetailActivity extends AppCompatActivity {
         if (word.isEmpty()) {
             return;
         }
-
-        String url = Uri.parse(ENDPOINT)
-                .buildUpon()
-                .appendQueryParameter("key", getString(R.string.api_key))
-                .appendQueryParameter("lang", "ru-en")
-                .appendQueryParameter("text", word)
-                .build()
-                .toString();
-        StringRequest request = new StringRequest(Request.Method.GET, url, onWordsLoaded, onWordsError);
-        mRequestQueue.add(request);
+        Log.i(TAG, "fetchTranslate: " + mCache.size());
+        List<String> variantsFromCache = getVariantsFromCache(word.toLowerCase());
+        if (variantsFromCache != null) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(DetailActivity.this,
+                    android.R.layout.simple_list_item_1, variantsFromCache);
+            mListView.setAdapter(adapter);
+        } else {
+            Log.i(TAG, "fetchTranslate: NULL");
+            String url = Uri.parse(ENDPOINT)
+                    .buildUpon()
+                    .appendQueryParameter("key", getString(R.string.api_key))
+                    .appendQueryParameter("lang", "ru-en")
+                    .appendQueryParameter("text", word)
+                    .build()
+                    .toString();
+            StringRequest request = new StringRequest(Request.Method.GET, url, onWordsLoaded, onWordsError);
+            mRequestQueue.add(request);
+        }
     }
 
     private Response.Listener<String> onWordsLoaded = new Response.Listener<String>() {
@@ -215,6 +230,7 @@ public class DetailActivity extends AppCompatActivity {
         public void onResponse(String response) {
             Translate translate = mGson.fromJson(response, Translate.class);
             List<String> variants = translate.getVariants();
+            saveVariantsToCache(mWordEditText.getText().toString().toLowerCase(), variants);
             ArrayAdapter<String> adapter = new ArrayAdapter<>(DetailActivity.this,
                     android.R.layout.simple_list_item_1, variants);
             mListView.setAdapter(adapter);
@@ -227,4 +243,17 @@ public class DetailActivity extends AppCompatActivity {
             Toast.makeText(DetailActivity.this, R.string.error_data_loading, Toast.LENGTH_SHORT).show();
         }
     };
+
+    private void saveVariantsToCache(String word, List<String> variants) {
+        Log.i(TAG, "saveVariantsToCache: ");
+        if (getVariantsFromCache(word) == null) {
+            mCache.put(word, variants);
+            Log.i(TAG, "SAVED " + word);
+            Log.i(TAG, "SIZE = " + mCache.size());
+        }
+    }
+
+    private List<String> getVariantsFromCache(String word) {
+        return mCache.get(word);
+    }
 }
